@@ -1,40 +1,15 @@
 from sequence import *
+from scaling import *
 
+min_width = 1
 max_width = 50
-
-
-def compute_widths(sequences):
-    scaling = {}
-    for i in range(1, max_width):
-        scaling[i] = []
-
-    for sequence in sequences:
-        sequence.scale(max_width)
-
-        for s in scaling[sequence.width]:
-            conflicts = []
-            if sequence.overlaps(s):
-                conflicts.append(s)
-
-        closest = sequence
-        dist = abs(sequence.scaled_weight - sequence.width)
-        for s in conflicts:
-            if abs(s.scaled_weight - s.width) < dist:
-                closest = s
-                dist = abs(s.scaled_weight - s.width)
-
-        # TODO
-        # Rearrange some sequences
-
-        scaling[sequence.width].append(sequence)
+max_width_diff = 1
 
 
 def main():
-    sequences = []
+    sequences = [Sequence(1, 1), Sequence(1, 3), Sequence(1, 5)]
 
-    compute_widths(sequences)
-
-    print("Hello")
+    compute_widths(sequences, min_width, max_width, max_width_diff)
 
 
 if __name__ == "__main__":
