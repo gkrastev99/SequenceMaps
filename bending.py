@@ -4,8 +4,9 @@ from scaling import *
 
 
 class Bending:
-    def __init__(self, loc_radius, obs_buffer_dist, bend_smoothness):
-        self.loc_radius = loc_radius
+    loc_radius = 0
+
+    def __init__(self, obs_buffer_dist, bend_smoothness):
         self.obs_buffer_dist = obs_buffer_dist
         self.bend_smoothness = bend_smoothness
 
@@ -159,8 +160,12 @@ class Bending:
         # along the given edge, because smaller ones will not cause more bends
         sequences = sorted(sequences, reverse=True, key=lambda x: x.weight)
 
+        # Avoid the onion around other locations
+        # Simply the largest onion for now
+        self.loc_radius = sequences[0].scaled_weight
+
         # Initialising the bendmatrix with all None values
-        bendmatrix = np.empty((len(locations), len(locations)), dtype=list)
+        bendmatrix = np.zeros((len(locations), len(locations)), dtype=list)
 
         # Dictionaries mapping location names to coordinates and indices
         name2coord = dict()
@@ -181,7 +186,7 @@ class Bending:
 
                 # If there is a list in this cell instead of None, a higher
                 # weight sequence has already been considered for this edge
-                if type(bendmatrix[name2idx[src.name]][name2idx[trg.name]]) == list:
+                if type(bendmatrix[name2idx[src.name]][name2idx[trg.name]]) != int:
                     continue
 
                 # The edge as a pair of coordinates

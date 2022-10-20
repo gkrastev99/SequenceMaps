@@ -74,7 +74,7 @@ def main():
     )
     scaling.compute_widths(sequences, False)
 
-    bending = Bending(loc_radius, obs_buffer_dist, bend_smoothness)
+    bending = Bending(obs_buffer_dist, bend_smoothness)
 
     obstacles = []
     bendmatrix, name2idx = bending.bendmatrix(sequences, locations, obstacles)
