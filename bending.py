@@ -47,8 +47,8 @@ class Bending:
         if len(obs) == 1:
             loc = obs[0]
             # Distance from location to endpoints of edge
-            dp1 = np.linalg.norm(p1 - loc)
-            dp2 = np.linalg.norm(p2 - loc)
+            #dp1 = np.linalg.norm(p1 - loc)
+            #dp2 = np.linalg.norm(p2 - loc)
 
             T, R = self.trans_rot(edge)
 
@@ -64,12 +64,12 @@ class Bending:
                 dline = np.abs(loc_tr[1])
 
             # The minimum of all these is the distance from the edge to the point
-            return np.min([dp1, dp2, dline])
+            return dline#np.min([dp1, dp2, dline])
 
         else:  # The distance between an line and a polygon (obstacle)
             min = 9 ** 99
 
-            # The minimum distane from the line to each point that defines the polygon
+            # The minimum distance from the line to each point that defines the polygon
             for pt in obs:
                 min = np.min([min, self.dist(edge, [pt], line_width)])
 
@@ -125,6 +125,9 @@ class Bending:
             min_y = np.min(obs_tr.T[1]) - lw - self.obs_buffer_dist
             max_y = np.max(obs_tr.T[1]) + lw + self.obs_buffer_dist
 
+        if min_y > 0 or max_y < 0:
+            return 4 * [[0, 0]]
+
         # The midpoints of the bend will be:
         # consecutive in x value, and the smallest absolute y
         midpoints = []
@@ -162,7 +165,7 @@ class Bending:
 
         # Avoid the onion around other locations
         # Simply the largest onion for now
-        self.loc_radius = sequences[0].scaled_weight
+        self.loc_radius = 0  # sequences[0].width
 
         # Initialising the bendmatrix with all None values
         bendmatrix = np.zeros((len(locations), len(locations)), dtype=list)
@@ -177,7 +180,7 @@ class Bending:
         # Going through the sequences to make the matrix
         for sequence in sequences:
             locs = sequence.locations
-            line_width = sequence.scaled_weight
+            line_width = sequence.width
 
             # Every pair of locations in the sequence means an edge
             for i in range(len(locs) - 1):
@@ -212,7 +215,7 @@ class Bending:
                         self.dist(edge, obs, line_width)
                         < line_width + self.obs_buffer_dist
                     ):
-                        bend = self.bendpoints_tr(edge, obs, line_width)
+                        bend = self.bendpoints_tr(edge, obs, line_width/1000)
                         st.extend([bend])
 
                 # Sort all the bends on the x coordinate of the first point
@@ -241,7 +244,7 @@ class Bending:
 
                 # If there is no bend necessary, st will be an empty list.
                 # Gives an error with NumPy matrix multiplication.
-                if list(st) != []:
+                if list(st):
                     line = np.matmul(R.T, st.T).T + T
                 else:
                     line = st
