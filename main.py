@@ -1,10 +1,48 @@
-from location import *
-from scaling import *
 from bending import *
+from bokeh.io import show
+from bokeh.plotting import figure
+import random
+
+# Maps countries to coordinates
+country_to_coordinates = {'Ukraine': [17, 9],
+                          'Russia': [18, 14],
+                          'Poland': [12, 10],
+                          'Germany': [9, 10],
+                          'Czech Republic': [9, 7],
+                          'Italy': [9, 5],
+                          'Turkey': [18, 3],
+                          'Spain': [2, 4],
+                          'United Kingdom': [5, 11],
+                          'France': [5, 7],
+                          'Slovakia': [13, 8],
+                          'Moldova': [17, 7],
+                          'Romania': [15, 7],
+                          'Austria': [8, 7],
+                          'Bulgaria': [15, 5],
+                          'Netherlands': [7, 10],
+                          'Switzerland': [9, 6],
+                          'Lithuania': [14, 11],
+                          'Belgium': [7, 9],
+                          'Estonia': [14, 13],
+                          'Portugal': [2, 4],
+                          'Ireland': [4, 11],
+                          'Sweden': [12, 17],
+                          'Latvia': [14, 12],
+                          'Finland': [14, 16],
+                          'Denmark': [12, 9],
+                          'Hungary': [13, 6],
+                          'Georgia': [20, 7],
+                          'Montenegro': [13, 4],
+                          'Norway': [10, 15],
+                          'Croatia': [12, 5],
+                          'Greece': [14, 2],
+                          'Serbia': [14, 5],
+                          'Cyprus': [19, 1],
+                          'Belarus': [15, 11]}
 
 # Scaling parameters
-min_width = 1  # Minimum sequence width
-max_width = 5  # Maximum sequence width
+min_width = 5  # Minimum sequence width
+max_width = 30  # Maximum sequence width
 max_width_diff = 1  # Maximum difference between scaled weight and width of a sequence
 width_diff_scalar = 1  # Scalar for width difference penalty
 conflict_scalar = 2  # Scalar for conflict penalty
@@ -16,47 +54,40 @@ bend_smoothness = 0.5
 
 
 def main():
-    # Test input
-    # source = Location("source", 0, 0)
-    # l1 = Location("l1", 10, 0)
-    # l2 = Location("l2", 0, 10)
-    # l3 = Location("l3", 10, 10)
-    # sequences = []
-    # sequences.append(Sequence([source, l3, l1], 1))
-    # sequences.append(Sequence([source, l1, l2], 2))
-    # sequences.append(Sequence([source, l2, l1], 2))
-    # sequences.append(Sequence([source, l1, l2, l3], 3))
+    # Maps countries to location objects
+    country_to_location = {}
+    for country, coordinates in country_to_coordinates.items():
+        country_to_location[country] = Location(country, coordinates[0], coordinates[1])
 
-    # Another test input
-    S = Location("S", 0, 0)
-    A = Location("A", 4, 4)
-    B = Location("B", 4, -0.5)
-    C = Location("C", 3.5, -4)
-    D = Location("D", 6, 1)
-
+    # Random sequences
     sequences = []
-    sequences.append(Sequence([S, A, D], 1000))
-    sequences.append(Sequence([S, B, D], 700))
-    sequences.append(Sequence([S, B, C], 500))
-    sequences.append(Sequence([S, A], 200))
-    # sequences.append(Sequence([S, A, C], 200))
+    for i in range(5):
+        locations = [country_to_location["Ukraine"]]
+        for j in range(3):
+            country, location = random.choice(list(country_to_location.items()))
+            locations.append(location)
+
+        sequences.append(Sequence(locations, i + 1, f"#{random.randint(1,9)}{random.randint(1,9)}{random.randint(1,9)}{random.randint(1,9)}{random.randint(1,9)}{random.randint(1,9)}"))
 
     scaling = Scaling(
         min_width, max_width, max_width_diff, width_diff_scalar, conflict_scalar
     )
-    scaling.compute_widths(sequences, True)
+    scaling.compute_widths(sequences, False)
 
     bending = Bending(loc_radius, obs_buffer_dist, bend_smoothness)
-    locations = [S, A, B, C, D]
-    # Obstacles: lists only, making a class would make things harder.
-    # I'm using numpy for matrix multiplications so I can
-    # translate and rotate all points of an obstacle at once.
-    obstacles = [[[4, -1.5]], [[3.5, -3]], [[2, 2], [3, 1], [4, 2], [2, 2]], [[1, 1.5]]]
+
+    obstacles = []
     bendmatrix, name2idx = bending.bendmatrix(sequences, locations, obstacles)
 
-    # use name2idx to read the appropriate cell values of the bendmatrix
+    plot = figure(plot_width=800, plot_height=500, title="Sequence map")
+    plot.image_url(url=['maps/europe.jpeg'], x=0, y=20, w=24, h=20)
 
-    # TODO: display the sequence map
+    for s in sorted(sequences, reverse=True, key=lambda x: x.width):
+        s.draw(plot, bendmatrix, name2idx)
+
+    show(plot)
+
+    # use name2idx to read the appropriate cell values of the bendmatrix
 
 
 if __name__ == "__main__":
