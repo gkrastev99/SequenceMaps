@@ -4,8 +4,9 @@ from scaling import *
 
 
 class Bending:
-    def __init__(self, loc_radius, obs_buffer_dist, bend_smoothness):
-        self.loc_radius = loc_radius
+    loc_radius = 0
+
+    def __init__(self, obs_buffer_dist, bend_smoothness):
         self.obs_buffer_dist = obs_buffer_dist
         self.bend_smoothness = bend_smoothness
 
@@ -158,6 +159,10 @@ class Bending:
         # This allows us to only look at the highest weight sequences that runs
         # along the given edge, because smaller ones will not cause more bends
         sequences = sorted(sequences, reverse=True, key=lambda x: x.weight)
+
+        # Avoid the onion around other locations
+        # Simply the largest onion for now
+        self.loc_radius = sequences[0].scaled_weight
 
         # Initialising the bendmatrix with all None values
         bendmatrix = np.zeros((len(locations), len(locations)), dtype=list)

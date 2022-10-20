@@ -46,7 +46,7 @@ def main():
     )
     scaling.compute_widths(sequences, True)
 
-    bending = Bending(loc_radius, obs_buffer_dist, bend_smoothness)
+    bending = Bending(obs_buffer_dist, bend_smoothness)
     locations = [S, A, B, C, D]
     # Obstacles: lists only, making a class would make things harder.
     # I'm using numpy for matrix multiplications so I can
