@@ -160,7 +160,7 @@ class Bending:
         sequences = sorted(sequences, reverse=True, key=lambda x: x.weight)
 
         # Initialising the bendmatrix with all None values
-        bendmatrix = np.empty((len(locations), len(locations)), dtype=list)
+        bendmatrix = np.zeros((len(locations), len(locations)), dtype=list)
 
         # Dictionaries mapping location names to coordinates and indices
         name2coord = dict()
@@ -181,7 +181,7 @@ class Bending:
 
                 # If there is a list in this cell instead of None, a higher
                 # weight sequence has already been considered for this edge
-                if type(bendmatrix[name2idx[src.name]][name2idx[trg.name]]) == list:
+                if type(bendmatrix[name2idx[src.name]][name2idx[trg.name]]) != int:
                     continue
 
                 # The edge as a pair of coordinates
