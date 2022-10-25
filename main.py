@@ -7,41 +7,41 @@ import distinctipy
 import matplotlib
 
 # Maps countries to coordinates
-country_to_coordinates = {'Ukraine': [17, 9],
-                          'Russia': [18, 14],
-                          'Poland': [12, 10],
-                          'Germany': [9, 10],
-                          'Czech Republic': [9, 7],
-                          'Italy': [9, 5],
-                          'Turkey': [18, 3],
+country_to_coordinates = {'Ukraine': [14, 8],
+                          'Russia': [16, 14],
+                          'Poland': [10, 9],
+                          'Germany': [7, 8],
+                          'Czech Republic': [9, 8],
+                          'Italy': [9, 3],
+                          'Turkey': [16, 3],
                           'Spain': [2, 4],
-                          'United Kingdom': [5, 11],
+                          'United Kingdom': [5, 10],
                           'France': [5, 7],
-                          'Slovakia': [13, 8],
-                          'Moldova': [17, 7],
-                          'Romania': [15, 7],
-                          'Austria': [8, 7],
-                          'Bulgaria': [15, 5],
-                          'Netherlands': [7, 10],
-                          'Switzerland': [9, 6],
-                          'Lithuania': [14, 11],
-                          'Belgium': [7, 9],
-                          'Estonia': [14, 13],
-                          'Portugal': [2, 4],
-                          'Ireland': [4, 11],
-                          'Sweden': [12, 17],
-                          'Latvia': [14, 12],
-                          'Finland': [14, 16],
-                          'Denmark': [12, 9],
-                          'Hungary': [13, 6],
-                          'Georgia': [20, 7],
-                          'Montenegro': [13, 4],
-                          'Norway': [10, 15],
-                          'Croatia': [12, 5],
-                          'Greece': [14, 2],
-                          'Serbia': [14, 5],
-                          'Cyprus': [19, 1],
-                          'Belarus': [15, 11]}
+                          'Slovakia': [10, 7],
+                          'Moldova': [13, 7],
+                          'Romania': [12, 6],
+                          'Austria': [9, 7],
+                          'Bulgaria': [13, 4],
+                          'Netherlands': [6, 10],
+                          'Switzerland': [7, 6],
+                          'Lithuania': [12, 11],
+                          'Belgium': [6, 8],
+                          'Estonia': [12, 13],
+                          'Portugal': [1, 4],
+                          'Ireland': [2, 10],
+                          'Sweden': [9, 14],
+                          'Latvia': [12, 12],
+                          'Finland': [11, 15],
+                          'Denmark': [7, 12],
+                          'Hungary': [10, 7],
+                          'Georgia': [28, 6],
+                          'Montenegro': [11, 4],
+                          'Norway': [7, 14],
+                          'Croatia': [9, 5],
+                          'Greece': [12, 2],
+                          'Serbia': [11, 5],
+                          'Cyprus': [16, 1],
+                          'Belarus': [13, 11]}
 
 # Scaling parameters
 min_width = 5  # Minimum sequence width
@@ -95,7 +95,7 @@ def main():
 
     # Plot sequence map
     plot = figure(plot_width=800, plot_height=500, title="Sequence map")
-    plot.image_url(url=['maps/europe.jpeg'], x=0, y=20, w=24, h=20)
+    plot.image_url(url=['maps/europe.png'], x=0, y=18, w=20, h=18)
     plot.axis.visible = False
     plot.grid.visible = False
     plot.x_range.range_padding = 0
@@ -108,7 +108,7 @@ def main():
 
     # Draw a point for each location
     for loc in locations:
-        plot.circle(loc.x, loc.y, size=max(min_width-1, 1), color=location_color)
+        plot.circle(loc.x, loc.y, size=max(min_width - 1, 1), color=location_color)
 
     show(full_screen_plot)
 
