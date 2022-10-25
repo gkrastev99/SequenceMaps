@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Sequence:
-    def __init__(self, locations, weight, color="black"):
+    def __init__(self, locations, weight, color=(0, 0, 0)):
         self.locations = locations  # List of location objects
         self.weight = weight
         self.color = color
