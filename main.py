@@ -95,12 +95,11 @@ def main():
 
     # Plot sequence map
     plot = figure(plot_width=800, plot_height=500, title="Sequence map")
-    plot.image_url(url=['maps/europe.png'], x=0, y=18, w=20, h=18)
+    plot.image_url(url=['maps/europe.png'], x=0, y=18, w=19, h=18)
     plot.axis.visible = False
     plot.grid.visible = False
     plot.x_range.range_padding = 0
     plot.y_range.range_padding = 0
-    full_screen_plot = gridplot([[plot]], sizing_mode='stretch_both')
 
     # Draw the sequences from large to small width
     for s in sorted(sequences, reverse=True, key=lambda x: x.width):
@@ -109,6 +108,8 @@ def main():
     # Draw a point for each location
     for loc in locations:
         plot.circle(loc.x, loc.y, size=max(min_width - 1, 1), color=location_color)
+
+    full_screen_plot = gridplot([[plot]], sizing_mode='stretch_both')
 
     show(full_screen_plot)
 

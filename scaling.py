@@ -14,6 +14,9 @@ class Scaling:
     def compute_widths(self, sequences, print_results=False):
         if not sequences:
             return
+        elif len(sequences) == 1:
+            sequences[0].width = self.max_width;
+            return
 
         # Sort sequences by ascending weight
         sorted_sequences = sorted(sequences, key=lambda x: x.weight)
