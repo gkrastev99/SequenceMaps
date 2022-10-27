@@ -47,8 +47,8 @@ class Bending:
         if len(obs) == 1:
             loc = obs[0]
             # Distance from location to endpoints of edge
-            #dp1 = np.linalg.norm(p1 - loc)
-            #dp2 = np.linalg.norm(p2 - loc)
+            # dp1 = np.linalg.norm(p1 - loc)
+            # dp2 = np.linalg.norm(p2 - loc)
 
             T, R = self.trans_rot(edge)
 
@@ -64,7 +64,7 @@ class Bending:
                 dline = np.abs(loc_tr[1])
 
             # The minimum of all these is the distance from the edge to the point
-            return dline#np.min([dp1, dp2, dline])
+            return dline  # np.min([dp1, dp2, dline])
 
         else:  # The distance between an line and a polygon (obstacle)
             min = 9 ** 99
@@ -93,6 +93,62 @@ class Bending:
                     )
 
             return min
+
+    # The distance from a line (list of points) to an obstacle
+    def linedist(self, line, obs, lw):
+
+        min = 9 ** 99
+
+        for i in range(len(line) - 1):
+            edge = [line[i], line[i + 1]]
+
+            min = np.min([min, self.dist(edge, obs, lw)])
+
+        return min
+
+    """--------------------------------------------------------------------"""
+    """-------------------------- QUALITY MEASURE -------------------------"""
+    """--------------------------------------------------------------------"""
+
+    def quality(self, obstacles, bendmatrix, name2idx, name2coord):
+
+        # If we want little bit more than buffer
+        factor = 1.0
+
+        # Number of obstacles crossed by the graph
+        Q_count = 0
+        # Sum of distance needed to be outside of the buffer zone of the object
+        # "How far away we are from a perfect solution"
+        Q_sum = 0
+
+        # List of locations (want to avoid other locations too)
+        locs = [[loc] for loc in name2coord.values()]
+
+        avoid = [*obstacles, *locs]
+
+        for obs in avoid:
+            for src in name2idx.keys():
+                for trg in name2idx.keys():
+                    if (
+                        type(bendmatrix[name2idx[src]][name2idx[trg]]) == int
+                    ):  # no bend. not in graph.
+                        continue
+                    elif bendmatrix[name2idx[src]][name2idx[trg]] == []:  # no bend.
+                        line = [name2coord[src], name2coord[trg]]
+                    else:  # bends
+                        bends = bendmatrix[name2idx[src]][name2idx[trg]]
+                        line = [name2coord[src], *bends, name2coord[trg]]
+
+                    # If the line is close to the obstacle
+                    if self.linedist(line, obs, 0) < self.obs_buffer_dist * factor:
+                        # increment
+                        Q_count = Q_count + 1
+                        # add the distance to the edge of the buffer zone to the sum
+                        Q_sum = Q_sum + (
+                            self.obs_buffer_dist * factor - self.linedist(line, obs, 0)
+                        )
+
+        return Q_count, Q_sum
 
     """--------------------------------------------------------------------"""
     """---------------------------- BENDPOINTS ----------------------------"""
@@ -180,7 +236,7 @@ class Bending:
         # Going through the sequences to make the matrix
         for sequence in sequences:
             locs = sequence.locations
-            line_width = sequence.width
+            line_width = sequence.width * 0.00445
 
             # Every pair of locations in the sequence means an edge
             for i in range(len(locs) - 1):
@@ -215,7 +271,7 @@ class Bending:
                         self.dist(edge, obs, line_width)
                         < line_width + self.obs_buffer_dist
                     ):
-                        bend = self.bendpoints_tr(edge, obs, line_width/1000)
+                        bend = self.bendpoints_tr(edge, obs, line_width)
                         st.extend([bend])
 
                 # Sort all the bends on the x coordinate of the first point
@@ -254,6 +310,8 @@ class Bending:
                 # And also assign it to the reverse edge,
                 # to ensure the same bends and save computation
                 bendmatrix[name2idx[trg.name]][name2idx[src.name]] = line[::-1]
+
+        print(self.quality(obstacles, bendmatrix, name2idx, name2coord))
 
         # The matrix, and how to read it
         return bendmatrix, name2idx
