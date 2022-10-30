@@ -45,7 +45,7 @@ country_to_coordinates = {'Ukraine': [14, 8],
                           'Belarus': [12.5, 11]}
 
 # Scaling parameters
-min_width = 2   # Minimum sequence width
+min_width = 5   # Minimum sequence width
 max_width = 30  # Maximum sequence width
 max_width_diff = 1  # Maximum difference between scaled weight and width of a sequence
 width_diff_scalar = 1  # Scalar for width difference penalty
@@ -98,7 +98,7 @@ def main():
     scaling = Scaling(
         min_width, max_width, max_width_diff, width_diff_scalar, conflict_scalar
     )
-    scaling.compute_widths(sequences, False)
+    scaling.compute_widths(sequences, False, True)
 
     bending = Bending(obs_buffer_dist, bend_smoothness)
     obstacles = []

@@ -11,7 +11,7 @@ class Scaling:
         self.conflict_scalar = conflict_scalar  # Scalar for conflict penalty
 
     # Compute the widths of the sequences from their weights.
-    def compute_widths(self, sequences, print_results=False):
+    def compute_widths(self, sequences, print_results=False, print_quality=False):
         if not sequences:
             return
         elif len(sequences) == 1:
@@ -25,7 +25,7 @@ class Scaling:
         self.__scale_weights(sorted_sequences)
 
         # Compute widths using linear programming
-        widths = self.__solve_lp(sorted_sequences, print_results)
+        widths = self.__solve_lp(sorted_sequences, print_results, print_quality)
 
         # Assign computed widths to sequences
         for i in range(len(sorted_sequences)):
@@ -50,7 +50,7 @@ class Scaling:
     # Objective function:
     # - Optimize width difference between sequences with similar scaled weight that share an edge (aim for at least 1).
     # - Minimize differences between scaled weights and widths of sequences (to keep width distribution similar).
-    def __solve_lp(self, sorted_sequences, print_results):
+    def __solve_lp(self, sorted_sequences, print_results, print_quality):
         # Create a solver
         solver = pywraplp.Solver("Optimize sequence widths", pywraplp.Solver.GLOP_LINEAR_PROGRAMMING)
 
@@ -83,7 +83,7 @@ class Scaling:
         for i in range(len(sorted_sequences) - 1):
             j = i + 1
             while j < len(sorted_sequences) \
-                    and sorted_sequences[j].scaled_weight - sorted_sequences[i].scaled_weight < 2 * self.max_width_diff:
+                    and sorted_sequences[j].scaled_weight - sorted_sequences[i].scaled_weight < 2 * self.max_width_diff + 1:
                 if Sequence.share_edge(sorted_sequences[i], sorted_sequences[j]):
                     conflicts.append([i, j])
                     break
@@ -94,16 +94,13 @@ class Scaling:
         X = [solver.NumVar(0, 1, f"X_{i}") for i in range(len(conflicts))]
         x1 = 1
         x2 = [widths[conflict[1]] - widths[conflict[0]] for conflict in conflicts]
-        y = solver.BoolVar("y")
-        M = 5
-        for x in x2:
-            solver.Add(x - x1 <= M * y)
-            solver.Add(x1 - x <= M * (1 - y))
-        for i in range(len(X)):
-            solver.Add(X[i] <= 1)
+        y = [solver.BoolVar("y") for i in range(len(conflicts))]
+        M = self.max_width
+        for i in range(len(conflicts)):
+            solver.Add(X[i] <= x1)
             solver.Add(X[i] <= x2[i])
-            solver.Add(X[i] >= x1 - M * (1 - y))
-            solver.Add(X[i] >= x2[i] - M * y)
+            solver.Add(X[i] >= x1 - M * (1 - y[i]))
+            solver.Add(X[i] >= x2[i] - M * y[i])
 
         # Set conflict penalties
         conflict_pens = [1 - x for x in X]
@@ -125,5 +122,18 @@ class Scaling:
                 print("===================================================")
             else:
                 print("The solver could not find an optimal solution to the linear program")
+
+        if print_quality:
+            total_width_diff_pen = 0
+            for i in range(len(sorted_sequences)):
+                total_width_diff_pen += abs(widths[i].solution_value() - sorted_sequences[i].scaled_weight)
+
+            total_conflict_pen = 0
+            for c in conflicts:
+                total_conflict_pen += 1 - min(1, widths[c[1]].solution_value() - widths[c[0]].solution_value())
+
+            quality = (total_width_diff_pen + total_conflict_pen) / len(sorted_sequences)
+
+            print(f"Scaling quality: {quality}")
 
         return [width.solution_value() for width in widths]
